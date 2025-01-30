@@ -20,7 +20,8 @@ jobs:
       run: |
         curl https://sdk.cloud.google.com | bash
         source $HOME/google-cloud-sdk/path.bash.inc
-        gcloud auth activate-service-account --key-file=${{ secrets.GCP_KEY_FILE }}
+        echo "${{ secrets.GCP_KEY_FILE }}" > $HOME/gcp-key.json
+        gcloud auth activate-service-account --key-file=$HOME/gcp-key.json
 
     - name: Initialize Terraform
       run: terraform init
