@@ -21,6 +21,7 @@ jobs:
         curl https://sdk.cloud.google.com | bash
         source $HOME/google-cloud-sdk/path.bash.inc
         # Write the service account key JSON content to a file
+        echo "${{ secrets.GCP_KEY_FILE }}"
         echo "${{ secrets.GCP_KEY_FILE }}" > $HOME/gcp-key.json
         # Debugging: Print contents to ensure key is correct (optional, remove after verification)
         cat $HOME/gcp-key.json
