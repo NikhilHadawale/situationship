@@ -20,8 +20,13 @@ jobs:
       run: |
         curl https://sdk.cloud.google.com | bash
         source $HOME/google-cloud-sdk/path.bash.inc
+        # Write the service account key JSON content to a file
         echo "${{ secrets.GCP_KEY_FILE }}" > $HOME/gcp-key.json
+        # Debugging: Print contents to ensure key is correct (optional, remove after verification)
+        cat $HOME/gcp-key.json
+        # Authenticate using the service account key
         gcloud auth activate-service-account --key-file=$HOME/gcp-key.json
+        gcloud config set project ${{ secrets.GCP_PROJECT }}
 
     - name: Initialize Terraform
       run: terraform init
@@ -35,24 +40,37 @@ jobs:
         INSTANCE_IP=$(terraform output -raw instance_external_ip)
         echo "INSTANCE_IP=$INSTANCE_IP" >> $GITHUB_ENV
 
+    - name: Wait for instance to be ready
+      run: sleep 30  # Adjust this based on instance startup time
+
     - name: Install Docker on the instance
       run: |
-        ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} nikhil@${{ env.INSTANCE_IP }} << EOF
+        # Debugging: Verbose SSH output to troubleshoot connection issues
+        ssh -v -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} nikhil@${{ env.INSTANCE_IP }} <<EOF
           sudo apt-get update
           sudo apt-get install -y docker.io
           sudo systemctl enable docker
           sudo systemctl start docker
         EOF
-    
+
     - name: Run DeepSeek Model and WebUI via Docker
       run: |
-          ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} nikhil@${{ env.INSTANCE_IP }} <<EOF
-            docker run -d -p 8080:8080 --name deepseek-webui openwebui/ollama-webui
-            docker run -d --name deepseek-model deepseek-model:latest
-          EOF
-    
+        # Run both containers via Docker
+        ssh -v -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} nikhil@${{ env.INSTANCE_IP }} <<EOF
+          docker run -d -p 8080:8080 --name deepseek-webui openwebui/ollama-webui
+          docker run -d --name deepseek-model deepseek-model:latest
+        EOF
+
     - name: Confirm WebUI is Running
       run: |
-            ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} nikhil@${{ env.INSTANCE_IP }} <<EOF
-              curl http://localhost:8080
-            EOF
+        # Check if WebUI is accessible by hitting localhost:8080
+        ssh -v -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} nikhil@${{ env.INSTANCE_IP }} <<EOF
+          curl http://localhost:8080
+        EOF
+
+    - name: List Docker Containers (Optional Debugging)
+      run: |
+        # Debugging: List the running Docker containers
+        ssh -v -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} nikhil@${{ env.INSTANCE_IP }} <<EOF
+          docker ps
+        EOF
