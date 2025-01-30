@@ -56,4 +56,3 @@ jobs:
             ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} nikhil@${{ env.INSTANCE_IP }} <<EOF
               curl http://localhost:8080
             EOF
-    
