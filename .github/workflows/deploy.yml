@@ -30,7 +30,9 @@ jobs:
       run: terraform init
 
     - name: Apply Terraform configuration
-      run: terraform apply -auto-approve
+      run: |
+        terraform plan
+        terraform apply -auto-approve
 
     - name: Get the external IP of the instance
       id: get_ip
