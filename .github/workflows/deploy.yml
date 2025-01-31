@@ -18,15 +18,13 @@ jobs:
 
     - name: Install Google Cloud SDK
       run: |
-        curl https://sdk.cloud.google.com | bash
-        source $HOME/google-cloud-sdk/path.bash.inc
+        curl https://sdk.cloud.google.com | bash -s -- --disable-prompts
         # Write the service account key JSON content to a file
         echo "${{ secrets.GCP_KEY_FILE }}" > $HOME/gcp-key.json
         # Debugging: Print contents to ensure key is correct (optional, remove after verification)
         cat $HOME/gcp-key.json
         # Authenticate using the service account key
         gcloud auth activate-service-account --key-file=$HOME/gcp-key.json
-        gcloud config set project ${{ secrets.GCP_PROJECT }}
 
     - name: Initialize Terraform
       run: terraform init
