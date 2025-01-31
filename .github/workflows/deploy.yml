@@ -20,14 +20,6 @@ jobs:
         # Authenticate using the service account key
         gcloud auth activate-service-account --key-file=$HOME/gcp-key.json
 
-    - name: Initialize Terraform
-      run: terraform init
-
-    - name: Apply Terraform configuration
-      run: |
-        terraform plan
-        terraform apply -auto-approve
-
     - name: Get the external IP of the instance
       id: get_ip
       run: |
