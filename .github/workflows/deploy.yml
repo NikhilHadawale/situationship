@@ -10,12 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v2
-
     - name: Install Google Cloud SDK
       run: |
         curl https://sdk.cloud.google.com | bash -s -- --disable-prompts
@@ -42,7 +36,21 @@ jobs:
 
     - name: Wait for instance to be ready
       run: sleep 30  # Adjust this based on instance startup time
-
+    - name: Checkout Code
+      uses: actions/checkout@v2
+      
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v1
+      
+    - name: Terraform Init
+      run: terraform init
+      
+    - name: Terraform Plan
+      run: terraform plan
+      
+    - name: Terraform Apply
+      run: terraform apply -auto-approve
+    
     - name: Install Docker on the instance
       run: |
         # Debugging: Verbose SSH output to troubleshoot connection issues
